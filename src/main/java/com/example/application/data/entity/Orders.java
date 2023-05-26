@@ -2,8 +2,6 @@ package com.example.application.data.entity;
 
 import java.time.LocalDate;
 
-import org.springframework.cglib.core.Local;
-
 import jakarta.persistence.Entity;
 
 @Entity
