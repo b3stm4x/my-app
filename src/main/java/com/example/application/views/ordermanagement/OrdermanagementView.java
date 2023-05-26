@@ -1,12 +1,12 @@
 package com.example.application.views.ordermanagement;
 
-import com.example.application.data.entity.SamplePerson;
-import com.example.application.data.service.SamplePersonService;
+import com.example.application.data.entity.Orders;
+import com.example.application.data.service.OrdersService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.checkbox.Checkbox;
+//import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -22,13 +22,15 @@ import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.ValidationException;
-import com.vaadin.flow.data.renderer.LitRenderer;
+//import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
 import java.util.Optional;
+
+//import org.apache.catalina.servlets.DefaultServlet.SortManager.Order;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
@@ -37,31 +39,35 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 @Uses(Icon.class)
 public class OrdermanagementView extends Div implements BeforeEnterObserver {
 
-    private final String SAMPLEPERSON_ID = "samplePersonID";
-    private final String SAMPLEPERSON_EDIT_ROUTE_TEMPLATE = "ordermanagement/%s/edit";
+    private final String ORDERS_ID = "ordersID";
+    private final String ORDERS_EDIT_ROUTE_TEMPLATE = "ordermanagement/%s/edit";
 
-    private final Grid<SamplePerson> grid = new Grid<>(SamplePerson.class, false);
+    private final Grid<Orders> grid = new Grid<>(Orders.class, false);
 
-    private TextField firstName;
-    private TextField lastName;
-    private TextField email;
-    private TextField phone;
-    private DatePicker dateOfBirth;
-    private TextField occupation;
-    private TextField role;
-    private Checkbox important;
+    private TextField orderId;
+    private TextField customerId;
+    private TextField objectDescription;
+    private TextField pickupAdress;
+    private TextField pickupCountry;
+    private TextField deliveryAdress;
+    private TextField deliveryCountry;
+    private TextField vehicleId;
+    private DatePicker etd;
+    private DatePicker eta;
 
     private final Button cancel = new Button("Cancel");
     private final Button save = new Button("Save");
+    private final Button delete = new Button("Delete");
+    private final Button search = new Button("Search");
 
-    private final BeanValidationBinder<SamplePerson> binder;
+    private final BeanValidationBinder<Orders> binder;
 
-    private SamplePerson samplePerson;
+    private Orders orders;
 
-    private final SamplePersonService samplePersonService;
+    private final OrdersService ordersService;
 
-    public OrdermanagementView(SamplePersonService samplePersonService) {
-        this.samplePersonService = samplePersonService;
+    public OrdermanagementView(OrdersService ordersService) {
+        this.ordersService = ordersService;
         addClassNames("ordermanagement-view");
 
         // Create UI
@@ -73,23 +79,18 @@ public class OrdermanagementView extends Div implements BeforeEnterObserver {
         add(splitLayout);
 
         // Configure Grid
-        grid.addColumn("firstName").setAutoWidth(true);
-        grid.addColumn("lastName").setAutoWidth(true);
-        grid.addColumn("email").setAutoWidth(true);
-        grid.addColumn("phone").setAutoWidth(true);
-        grid.addColumn("dateOfBirth").setAutoWidth(true);
-        grid.addColumn("occupation").setAutoWidth(true);
-        grid.addColumn("role").setAutoWidth(true);
-        LitRenderer<SamplePerson> importantRenderer = LitRenderer.<SamplePerson>of(
-                "<vaadin-icon icon='vaadin:${item.icon}' style='width: var(--lumo-icon-size-s); height: var(--lumo-icon-size-s); color: ${item.color};'></vaadin-icon>")
-                .withProperty("icon", important -> important.isImportant() ? "check" : "minus").withProperty("color",
-                        important -> important.isImportant()
-                                ? "var(--lumo-primary-text-color)"
-                                : "var(--lumo-disabled-text-color)");
+        grid.addColumn("orderId").setAutoWidth(true);
+        grid.addColumn("customerId").setAutoWidth(true);
+        grid.addColumn("objectDescription").setAutoWidth(true);
+        grid.addColumn("pickupAdress").setAutoWidth(true);
+        grid.addColumn("pickupCountry").setAutoWidth(true);
+        grid.addColumn("deliveryAdress").setAutoWidth(true);
+        grid.addColumn("deliveryCountry").setAutoWidth(true);
+        grid.addColumn("vehicleId").setAutoWidth(true);
+        grid.addColumn("etd").setAutoWidth(true);
+        grid.addColumn("eta").setAutoWidth(true);
 
-        grid.addColumn(importantRenderer).setHeader("Important").setAutoWidth(true);
-
-        grid.setItems(query -> samplePersonService.list(
+        grid.setItems(query -> ordersService.list(
                 PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
                 .stream());
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
@@ -97,7 +98,7 @@ public class OrdermanagementView extends Div implements BeforeEnterObserver {
         // when a row is selected or deselected, populate form
         grid.asSingleSelect().addValueChangeListener(event -> {
             if (event.getValue() != null) {
-                UI.getCurrent().navigate(String.format(SAMPLEPERSON_EDIT_ROUTE_TEMPLATE, event.getValue().getId()));
+                UI.getCurrent().navigate(String.format(ORDERS_EDIT_ROUTE_TEMPLATE, event.getValue().getId()));
             } else {
                 clearForm();
                 UI.getCurrent().navigate(OrdermanagementView.class);
@@ -105,7 +106,7 @@ public class OrdermanagementView extends Div implements BeforeEnterObserver {
         });
 
         // Configure Form
-        binder = new BeanValidationBinder<>(SamplePerson.class);
+        binder = new BeanValidationBinder<>(Orders.class);
 
         // Bind fields. This is where you'd define e.g. validation rules
 
@@ -116,13 +117,22 @@ public class OrdermanagementView extends Div implements BeforeEnterObserver {
             refreshGrid();
         });
 
+        delete.addClickListener(e -> {
+            clearForm();
+            refreshGrid();
+        });
+
+        search.addClickListener(e -> {
+
+        });
+
         save.addClickListener(e -> {
             try {
-                if (this.samplePerson == null) {
-                    this.samplePerson = new SamplePerson();
+                if (this.orders == null) {
+                    this.orders = new Orders();
                 }
-                binder.writeBean(this.samplePerson);
-                samplePersonService.update(this.samplePerson);
+                binder.writeBean(this.orders);
+                ordersService.update(this.orders);
                 clearForm();
                 refreshGrid();
                 Notification.show("Data updated");
@@ -140,14 +150,14 @@ public class OrdermanagementView extends Div implements BeforeEnterObserver {
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        Optional<Long> samplePersonId = event.getRouteParameters().get(SAMPLEPERSON_ID).map(Long::parseLong);
-        if (samplePersonId.isPresent()) {
-            Optional<SamplePerson> samplePersonFromBackend = samplePersonService.get(samplePersonId.get());
-            if (samplePersonFromBackend.isPresent()) {
-                populateForm(samplePersonFromBackend.get());
+        Optional<Long> ordersId = event.getRouteParameters().get(ORDERS_ID).map(Long::parseLong);
+        if (ordersId.isPresent()) {
+            Optional<Orders> ordersFromBackend = ordersService.get(ordersId.get());
+            if (ordersFromBackend.isPresent()) {
+                populateForm(ordersFromBackend.get());
             } else {
                 Notification.show(
-                        String.format("The requested samplePerson was not found, ID = %s", samplePersonId.get()), 3000,
+                        String.format("The requested samplePerson was not found, ID = %s", ordersId.get()), 3000,
                         Notification.Position.BOTTOM_START);
                 // when a row is selected but the data is no longer available,
                 // refresh grid
@@ -166,15 +176,18 @@ public class OrdermanagementView extends Div implements BeforeEnterObserver {
         editorLayoutDiv.add(editorDiv);
 
         FormLayout formLayout = new FormLayout();
-        firstName = new TextField("First Name");
-        lastName = new TextField("Last Name");
-        email = new TextField("Email");
-        phone = new TextField("Phone");
-        dateOfBirth = new DatePicker("Date Of Birth");
-        occupation = new TextField("Occupation");
-        role = new TextField("Role");
-        important = new Checkbox("Important");
-        formLayout.add(firstName, lastName, email, phone, dateOfBirth, occupation, role, important);
+        orderId = new TextField("Order ID");
+        customerId = new TextField("Customer ID");
+        objectDescription = new TextField("Object Description");
+        pickupAdress = new TextField("Adress for Pick Up");
+        pickupCountry = new TextField("Country for Pick Up");
+        deliveryAdress = new TextField("Adress for Delivery");
+        deliveryCountry = new TextField("Country for Delivery");
+        vehicleId = new TextField("Vehicle ID");
+        etd = new DatePicker("Estimated Time of Departure");
+        eta = new DatePicker("Estimated Time of Arrival");
+
+        formLayout.add(orderId, customerId, objectDescription, pickupAdress, pickupCountry, deliveryAdress, deliveryCountry, vehicleId, etd, eta);
 
         editorDiv.add(formLayout);
         createButtonLayout(editorLayoutDiv);
@@ -187,7 +200,8 @@ public class OrdermanagementView extends Div implements BeforeEnterObserver {
         buttonLayout.setClassName("button-layout");
         cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        buttonLayout.add(save, cancel);
+        delete.addThemeVariants(ButtonVariant.LUMO_ERROR);
+        buttonLayout.add(save, cancel, delete);
         editorLayoutDiv.add(buttonLayout);
     }
 
@@ -207,9 +221,9 @@ public class OrdermanagementView extends Div implements BeforeEnterObserver {
         populateForm(null);
     }
 
-    private void populateForm(SamplePerson value) {
-        this.samplePerson = value;
-        binder.readBean(this.samplePerson);
+    private void populateForm(Orders value) {
+        this.orders = value;
+        binder.readBean(this.orders);
 
     }
 }
