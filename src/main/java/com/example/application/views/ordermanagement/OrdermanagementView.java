@@ -6,6 +6,7 @@ import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 //import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.Uses;
@@ -117,9 +118,51 @@ public class OrdermanagementView extends Div implements BeforeEnterObserver {
             refreshGrid();
         });
 
-        delete.addClickListener(e -> {
+        ConfirmDialog confirmDelete = new ConfirmDialog();
+        confirmDelete.setHeader("Delete Data");
+        confirmDelete.setText("Are you sure you want to delete the selected Data? There is no way to undo this step.");
+        confirmDelete.setCancelable(true);
+        confirmDelete.addCancelListener(e ->{
             clearForm();
             refreshGrid();
+            Notification n = Notification.show("Data NOT deleted");
+            n.setPosition(Position.MIDDLE);
+            n.addThemeVariants(NotificationVariant.LUMO_PRIMARY);
+            n.setDuration(1500);
+        });
+        confirmDelete.setConfirmText("Delete");
+        confirmDelete.setConfirmButtonTheme("error primary");
+        confirmDelete.addConfirmListener(e -> {
+            ordersService.delete(this.orders.getId());
+            clearForm();
+            refreshGrid();
+            Notification n = Notification.show("Data deleted");
+            n.setPosition(Position.MIDDLE); 
+            n.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            n.setDuration(1500);
+        });
+       
+
+        delete.addClickListener(e -> {
+            
+            try{
+                
+                confirmDelete.open();
+                /* 
+                ordersService.delete(this.orders.getId());
+                clearForm();
+                refreshGrid();
+                Notification n = Notification.show("Data deleted");
+                n.setPosition(Position.MIDDLE); 
+                n.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                */
+            }catch (ObjectOptimisticLockingFailureException exception) {
+                Notification n = Notification.show(
+                        "Error updating the data. Somebody else has updated the record while you were making changes.");
+                n.setPosition(Position.MIDDLE);
+                n.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            }
+  
         });
 
         search.addClickListener(e -> {
