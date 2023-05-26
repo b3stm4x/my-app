@@ -35,7 +35,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 @PageTitle("Ordermanagement")
-@Route(value = "ordermanagement/:samplePersonID?/:action?(edit)", layout = MainLayout.class)
+@Route(value = "ordermanagement/:ordersID?/:action?(edit)", layout = MainLayout.class)
 @Uses(Icon.class)
 public class OrdermanagementView extends Div implements BeforeEnterObserver {
 
@@ -123,7 +123,7 @@ public class OrdermanagementView extends Div implements BeforeEnterObserver {
         });
 
         search.addClickListener(e -> {
-
+            
         });
 
         save.addClickListener(e -> {
@@ -157,7 +157,7 @@ public class OrdermanagementView extends Div implements BeforeEnterObserver {
                 populateForm(ordersFromBackend.get());
             } else {
                 Notification.show(
-                        String.format("The requested samplePerson was not found, ID = %s", ordersId.get()), 3000,
+                        String.format("The requested Order was not found, ID = %s", ordersId.get()), 3000,
                         Notification.Position.BOTTOM_START);
                 // when a row is selected but the data is no longer available,
                 // refresh grid
@@ -201,7 +201,8 @@ public class OrdermanagementView extends Div implements BeforeEnterObserver {
         cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         delete.addThemeVariants(ButtonVariant.LUMO_ERROR);
-        buttonLayout.add(save, cancel, delete);
+        search.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        buttonLayout.add(search, cancel, save, delete);
         editorLayoutDiv.add(buttonLayout);
     }
 
