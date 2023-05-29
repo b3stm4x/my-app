@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Bean;
  *
  */
 @SpringBootApplication
-@Theme(value = "myapp")
+@Theme(value = "Duce Logistik AG")
 public class Application implements AppShellConfigurator {
 
     public static void main(String[] args) {
