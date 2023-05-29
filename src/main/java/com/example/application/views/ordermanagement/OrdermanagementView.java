@@ -141,34 +141,22 @@ public class OrdermanagementView extends Div implements BeforeEnterObserver {
             n.addThemeVariants(NotificationVariant.LUMO_ERROR);
             n.setDuration(1500);
         });
-       
-
         delete.addClickListener(e -> {
-            
-            try{
-                
+            try{               
                 confirmDelete.open();
-                /* 
-                ordersService.delete(this.orders.getId());
-                clearForm();
-                refreshGrid();
-                Notification n = Notification.show("Data deleted");
-                n.setPosition(Position.MIDDLE); 
-                n.addThemeVariants(NotificationVariant.LUMO_ERROR);
-                */
             }catch (ObjectOptimisticLockingFailureException exception) {
                 Notification n = Notification.show(
                         "Error updating the data. Somebody else has updated the record while you were making changes.");
                 n.setPosition(Position.MIDDLE);
                 n.addThemeVariants(NotificationVariant.LUMO_ERROR);
             }
-  
         });
 
         search.addClickListener(e -> {
-            
+            //TODO Add Search functionality
         });
 
+        //TODO Add Confirm Dialogue for overwriting Data (and canceling Data?)
         save.addClickListener(e -> {
             try {
                 if (this.orders == null) {
