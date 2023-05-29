@@ -1,7 +1,7 @@
 package com.example.application.views.customermanagement;
 
-import com.example.application.data.entity.SamplePerson;
-import com.example.application.data.service.SamplePersonService;
+import com.example.application.data.entity.CustomerEntity;
+import com.example.application.data.service.CustomerService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -19,10 +19,10 @@ import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
+import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.ValidationException;
-import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
@@ -33,35 +33,45 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 @PageTitle("Customermanagement")
-@Route(value = "customermanagement/:samplePersonID?/:action?(edit)", layout = MainLayout.class)
+@Route(value = "customermanagement/:CustomerEntityID?/:action?(edit)", layout = MainLayout.class)
 @Uses(Icon.class)
 public class CustomermanagementView extends Div implements BeforeEnterObserver {
 
-    private final String SAMPLEPERSON_ID = "samplePersonID";
-    private final String SAMPLEPERSON_EDIT_ROUTE_TEMPLATE = "customermanagement/%s/edit";
+    private final String CUSTOMERENTITY_ID = "CustomerEntityID";
+    private final String CUSTOMERENTITY_EDIT_ROUTE_TEMPLATE = "customermanagement/%s/edit";
 
-    private final Grid<SamplePerson> grid = new Grid<>(SamplePerson.class, false);
+    private final Grid<CustomerEntity> grid = new Grid<>(CustomerEntity.class, false);
 
-    private TextField firstName;
-    private TextField lastName;
-    private TextField email;
-    private TextField phone;
-    private DatePicker dateOfBirth;
-    private TextField occupation;
-    private TextField role;
-    private Checkbox important;
+    private TextField kundennummer;
+    private TextField firma1;
+    private TextField firma2;
+    private TextField customerStrasse;
+    private TextField customerHausnummer;
+    private TextField customerStadt;
+    private TextField customerLand;
+    private TextField customerPLZ;
+    private EmailField customerEmail;
+    private TextField customerKontaktperson;
+    private EmailField customerKontaktmail;
+    private TextField customerUmsatzsteueridentifikation;
+    private TextField customerNotiz;
+    private TextField customerTelefonnummer;
+    private TextField customerKontakttelefon;
+
 
     private final Button cancel = new Button("Cancel");
     private final Button save = new Button("Save");
+    private final Button delete = new Button("Delete");
+    private final Button search = new Button("Search");
 
-    private final BeanValidationBinder<SamplePerson> binder;
+    private final BeanValidationBinder<CustomerEntity> binder;
 
-    private SamplePerson samplePerson;
+    private CustomerEntity CustomerEntity;
 
-    private final SamplePersonService samplePersonService;
+    private final CustomerService CustomerService;
 
-    public CustomermanagementView(SamplePersonService samplePersonService) {
-        this.samplePersonService = samplePersonService;
+    public CustomermanagementView(CustomerService customerService) {
+        this.CustomerService = customerService;
         addClassNames("customermanagement-view");
 
         // Create UI
@@ -73,23 +83,27 @@ public class CustomermanagementView extends Div implements BeforeEnterObserver {
         add(splitLayout);
 
         // Configure Grid
-        grid.addColumn("firstName").setAutoWidth(true);
-        grid.addColumn("lastName").setAutoWidth(true);
-        grid.addColumn("email").setAutoWidth(true);
-        grid.addColumn("phone").setAutoWidth(true);
-        grid.addColumn("dateOfBirth").setAutoWidth(true);
-        grid.addColumn("occupation").setAutoWidth(true);
-        grid.addColumn("role").setAutoWidth(true);
-        LitRenderer<SamplePerson> importantRenderer = LitRenderer.<SamplePerson>of(
-                "<vaadin-icon icon='vaadin:${item.icon}' style='width: var(--lumo-icon-size-s); height: var(--lumo-icon-size-s); color: ${item.color};'></vaadin-icon>")
-                .withProperty("icon", important -> important.isImportant() ? "check" : "minus").withProperty("color",
-                        important -> important.isImportant()
-                                ? "var(--lumo-primary-text-color)"
-                                : "var(--lumo-disabled-text-color)");
+        // grid.addColumn("kundennummer").setAutoWidth(true);
+        grid.addColumn("kundennummer").setHeader("Kundennummer").setAutoWidth(true);
+        grid.addColumn("firma1").setHeader("Firma").setAutoWidth(true);
+        grid.addColumn("customerStrasse").setHeader("Straße").setAutoWidth(true);
+        grid.addColumn("customerHausnummer").setHeader("Hausnummer").setAutoWidth(true);
+        grid.addColumn("customerStadt").setHeader("Stadt").setAutoWidth(true);
+        grid.addColumn("customerPLZ").setHeader("PLZ").setAutoWidth(true);
+        grid.addColumn("customerLand").setHeader("Land").setAutoWidth(true);
+        grid.addColumn("customerTelefonnummer").setHeader("Telefon").setAutoWidth(true);
+        grid.addColumn("customerEmail").setHeader("Email").setAutoWidth(true);
+        grid.addColumn("customerUmsatzsteueridentifikation").setHeader("Umsatzsteueridentifikation").setAutoWidth(true);
+        grid.addColumn("customerNotiz").setHeader("Notiz").setAutoWidth(true);
+        grid.addColumn("customerKontaktperson").setHeader("Ansprechpartner").setAutoWidth(true);
+        grid.addColumn("customerKontakttelefon").setHeader("Kontakt-Telefon").setAutoWidth(true);
+        grid.addColumn("customerKontaktmail").setHeader("Kontakt-Mail").setAutoWidth(true);
+        grid.addColumn("firma2").setHeader("Firma 2").setAutoWidth(true);
 
-        grid.addColumn(importantRenderer).setHeader("Important").setAutoWidth(true);
 
-        grid.setItems(query -> samplePersonService.list(
+
+
+        grid.setItems(query -> CustomerService.list(
                 PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
                 .stream());
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
@@ -97,7 +111,7 @@ public class CustomermanagementView extends Div implements BeforeEnterObserver {
         // when a row is selected or deselected, populate form
         grid.asSingleSelect().addValueChangeListener(event -> {
             if (event.getValue() != null) {
-                UI.getCurrent().navigate(String.format(SAMPLEPERSON_EDIT_ROUTE_TEMPLATE, event.getValue().getId()));
+                UI.getCurrent().navigate(String.format(CUSTOMERENTITY_EDIT_ROUTE_TEMPLATE, event.getValue().getId()));
             } else {
                 clearForm();
                 UI.getCurrent().navigate(CustomermanagementView.class);
@@ -105,7 +119,7 @@ public class CustomermanagementView extends Div implements BeforeEnterObserver {
         });
 
         // Configure Form
-        binder = new BeanValidationBinder<>(SamplePerson.class);
+        binder = new BeanValidationBinder<>(CustomerEntity.class);
 
         // Bind fields. This is where you'd define e.g. validation rules
 
@@ -118,11 +132,11 @@ public class CustomermanagementView extends Div implements BeforeEnterObserver {
 
         save.addClickListener(e -> {
             try {
-                if (this.samplePerson == null) {
-                    this.samplePerson = new SamplePerson();
+                if (this.CustomerEntity == null) {
+                    this.CustomerEntity = new CustomerEntity();
                 }
-                binder.writeBean(this.samplePerson);
-                samplePersonService.update(this.samplePerson);
+                binder.writeBean(this.CustomerEntity);
+                CustomerService.update(this.CustomerEntity);
                 clearForm();
                 refreshGrid();
                 Notification.show("Data updated");
@@ -140,14 +154,14 @@ public class CustomermanagementView extends Div implements BeforeEnterObserver {
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        Optional<Long> samplePersonId = event.getRouteParameters().get(SAMPLEPERSON_ID).map(Long::parseLong);
-        if (samplePersonId.isPresent()) {
-            Optional<SamplePerson> samplePersonFromBackend = samplePersonService.get(samplePersonId.get());
-            if (samplePersonFromBackend.isPresent()) {
-                populateForm(samplePersonFromBackend.get());
+        Optional<Long> CustomerEntityId = event.getRouteParameters().get(CUSTOMERENTITY_ID).map(Long::parseLong);
+        if (CustomerEntityId.isPresent()) {
+            Optional<CustomerEntity> CustomerEntityFromBackend = CustomerService.get(CustomerEntityId.get());
+            if (CustomerEntityFromBackend.isPresent()) {
+                populateForm(CustomerEntityFromBackend.get());
             } else {
                 Notification.show(
-                        String.format("The requested samplePerson was not found, ID = %s", samplePersonId.get()), 3000,
+                        String.format("The requested samplePerson was not found, ID = %s", CustomerEntityId.get()), 3000,
                         Notification.Position.BOTTOM_START);
                 // when a row is selected but the data is no longer available,
                 // refresh grid
@@ -166,15 +180,24 @@ public class CustomermanagementView extends Div implements BeforeEnterObserver {
         editorLayoutDiv.add(editorDiv);
 
         FormLayout formLayout = new FormLayout();
-        firstName = new TextField("First Name");
-        lastName = new TextField("Last Name");
-        email = new TextField("Email");
-        phone = new TextField("Phone");
-        dateOfBirth = new DatePicker("Date Of Birth");
-        occupation = new TextField("Occupation");
-        role = new TextField("Role");
-        important = new Checkbox("Important");
-        formLayout.add(firstName, lastName, email, phone, dateOfBirth, occupation, role, important);
+        kundennummer = new TextField("Kundennummer");
+        firma1 = new TextField("firma1");
+        customerStrasse = new TextField("Straße");
+        customerHausnummer = new TextField("Hausnummer");
+        customerStadt = new TextField("Stadt");
+        customerPLZ = new TextField("PLZ");
+        customerLand = new TextField("Land");
+        customerTelefonnummer = new TextField("Telefonnummer");
+        customerEmail = new EmailField("Email");
+        customerUmsatzsteueridentifikation = new TextField("Umsatzsteueridentifikation");
+        customerNotiz = new TextField("Notiz");
+        customerKontaktperson = new TextField("Kontaktperson");
+        customerKontakttelefon = new TextField("Kontakt-Telefon");
+        customerKontaktmail = new EmailField("Kontakt-Email");
+        firma2 = new TextField("firma2");
+        formLayout.add(kundennummer, firma1, customerStrasse, customerHausnummer, customerStadt,
+                customerPLZ, customerLand, customerTelefonnummer, customerEmail, customerUmsatzsteueridentifikation
+        , customerNotiz, customerKontaktperson, customerKontakttelefon, customerKontaktmail, firma2);
 
         editorDiv.add(formLayout);
         createButtonLayout(editorLayoutDiv);
@@ -207,9 +230,9 @@ public class CustomermanagementView extends Div implements BeforeEnterObserver {
         populateForm(null);
     }
 
-    private void populateForm(SamplePerson value) {
-        this.samplePerson = value;
-        binder.readBean(this.samplePerson);
+    private void populateForm(CustomerEntity value) {
+        this.CustomerEntity = value;
+        binder.readBean(this.CustomerEntity);
 
     }
 }
