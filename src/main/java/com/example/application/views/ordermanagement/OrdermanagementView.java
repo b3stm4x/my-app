@@ -123,7 +123,7 @@ public class OrdermanagementView extends Div implements BeforeEnterObserver {
         confirmDelete.setText("Are you sure you want to delete the selected Data? There is no way to undo this step.");
         confirmDelete.setCancelable(true);
         confirmDelete.addCancelListener(e ->{
-            clearForm();
+            //clearForm();
             refreshGrid();
             Notification n = Notification.show("Data NOT deleted");
             n.setPosition(Position.MIDDLE);
@@ -156,18 +156,59 @@ public class OrdermanagementView extends Div implements BeforeEnterObserver {
             //TODO Add Search functionality
         });
 
+        
+        ConfirmDialog confirmUpdate = new ConfirmDialog();
+        confirmUpdate.setHeader("Overwrite Data");
+        confirmUpdate.setText("Are you sure you want to overwrite this Data? There is no way to undo this step");
+        confirmUpdate.setCancelable(true);
+        confirmUpdate.addCancelListener(e -> {
+            //clearForm();
+            //refreshGrid();
+            Notification n = Notification.show("Data NOT overwritten");
+            n.setPosition(Position.MIDDLE);
+            n.addThemeVariants(NotificationVariant.LUMO_PRIMARY);
+            n.setDuration(1500);
+        });
+        confirmUpdate.setConfirmText("Overwrite");
+        confirmUpdate.setConfirmButtonTheme("error primary");
+        confirmUpdate.addConfirmListener(e -> {
+            ordersService.update(this.orders);
+            clearForm();
+            refreshGrid();
+            Notification n = Notification.show("Data overwritten");
+            n.setPosition(Position.MIDDLE); 
+            n.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            n.setDuration(1500);
+            UI.getCurrent().navigate(OrdermanagementView.class);
+        });
+        
+
+        
         //TODO Add Confirm Dialogue for overwriting Data (and canceling Data?)
         save.addClickListener(e -> {
             try {
                 if (this.orders == null) {
                     this.orders = new Orders();
+                    binder.writeBean(this.orders);
+                    ordersService.update(this.orders);
+                    clearForm();
+                    refreshGrid();
+                    Notification n = Notification.show("New Entry saved");
+                    n.setPosition(Position.MIDDLE);
+                    n.addThemeVariants(NotificationVariant.LUMO_PRIMARY);
+                    n.setDuration(1500);
+                    UI.getCurrent().navigate(OrdermanagementView.class);
                 }
-                binder.writeBean(this.orders);
+                else if (this.orders != null) {
+                    confirmUpdate.open(); 
+                    binder.writeBean(this.orders);     
+                }
+                /**binder.writeBean(this.orders);
                 ordersService.update(this.orders);
                 clearForm();
                 refreshGrid();
                 Notification.show("Data updated");
-                UI.getCurrent().navigate(OrdermanagementView.class);
+                UI.getCurrent().navigate(OrdermanagementView.class);**/
             } catch (ObjectOptimisticLockingFailureException exception) {
                 Notification n = Notification.show(
                         "Error updating the data. Somebody else has updated the record while you were making changes.");
